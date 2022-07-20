@@ -1,4 +1,5 @@
 import Image from "next/image";
+import SidebarLink from "./SidebarLink";
 
 function Sidebar() {
   return (
@@ -11,6 +12,9 @@ function Sidebar() {
       hoverAnimation p-0 xl:ml-24"
       >
         <Image src="http://rb.gy/ogau5a" width={30} height={30} />
+      </div>
+      <div className="space-y-2.5 mt-4 mb-2.5 xl:ml-24">
+        <SidebarLink />
       </div>
     </div>
   );
