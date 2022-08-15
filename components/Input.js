@@ -6,13 +6,24 @@ import {
   XIcon,
 } from "@heroicons/react/outline";
 import { useRef, useState } from "react";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 
 function Input() {
   const [input, setInput] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [showEmojis, setShowEmojis] = useState(false);
   const filePickerRef = useRef(null);
 
   const addImageToPost = () => {};
+
+  const addEmojis = (e) => {
+    let sym = e.unified.split("-");
+    let codesArray = [];
+    sym.forEach((el) => codesArray.push("0x" + el));
+    let emoji = String.fromCodePoint(...codesArray);
+    setInput(input + emoji);
+  };
 
   return (
     <div
@@ -20,12 +31,12 @@ function Input() {
       overflow-y-scroll scrollbar-hide`}
     >
       <img
-        src="https://pbs.twimg.com/media/FX9kIDvaMAAzqYl?format=jpg"
+        src="https://pbs.twimg.com/media/FaJEf9oaQAAW5ac?format=jpg"
         alt=""
         className="h-11 w-11 rounded-full cursor-pointer"
       />
       <div className="w-full divide-y divide-gray-700">
-        <div className={``}>
+        <div className={`${selectedFile && "pb-7"}${input && "space-y-2.5"}`}>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -73,14 +84,41 @@ function Input() {
               <ChartBarIcon className="text-[#1d9bf0] h-[22px]" />
             </div>
 
-            <div className="icon">
+            <div className="icon" onClick={() => setShowEmojis(!showEmojis)}>
               <EmojiHappyIcon className="text-[#1d9bf0] h-[22px]" />
             </div>
 
             <div className="icon">
               <CalendarIcon className="text-[#1d9bf0] h-[22px]" />
             </div>
+
+            {showEmojis && (
+              <div className="absolute mt-[465px] -ml-[40px] max-w-[320px] rounded-[20px]">
+                <Picker
+                  data={data}
+                  onEmojiSelect={addEmojis}
+                  // onClickOutside={() => setShowEmojis(false)}
+                  style={{
+                    position: "absolute",
+                    marginTop: "465px",
+                    marginLeft: -40,
+                    maxWidth: "320px",
+                    borderRadius: "20px",
+                  }}
+                  theme="light"
+                />
+              </div>
+            )}
           </div>
+          <button
+            className="bg-[#1d9bf0] text-white rounded-full px-4 py-1.5 
+            font-bold shadow-md hover:bg-[#1a8cd8] disabled:hover:bg-[#1d9bf0] 
+            disabled:opacity-50 disabled:cursor-default text-[15px]"
+            disabled={!input.trim() && !selectedFile}
+            // onClick={sendPost}
+          >
+            트윗하기
+          </button>
         </div>
       </div>
     </div>
