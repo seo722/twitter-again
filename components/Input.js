@@ -8,14 +8,64 @@ import {
 import { useRef, useState } from "react";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
+import { db, storage } from "../firebase";
+import {
+  addDoc,
+  collection,
+  doc,
+  serverTimestamp,
+  updateDoc,
+} from "@firebase/firestore";
+import { getDownloadURL, ref, uploadString } from "@firebase/storage";
 
 function Input() {
   const [input, setInput] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [showEmojis, setShowEmojis] = useState(false);
+  const [loading, setLoading] = useState(false);
   const filePickerRef = useRef(null);
 
-  const addImageToPost = () => {};
+  const sendPost = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    const docRef = await addDoc(collection(db, "posts"), {
+      // id: session.user.uid,
+      // username: session.user.name,
+      // userImg: session.user.image,
+      // tag: session.user.tag,
+      text: input,
+      timestamp: serverTimestamp(),
+    });
+
+    const imageRef = ref(storage, `posts/${docRef.id}/image`);
+    console.log(imageRef);
+
+    if (selectedFile) {
+      await uploadString(imageRef, selectedFile, "data_url").then(async () => {
+        const downloadURL = await getDownloadURL(imageRef);
+        await updateDoc(doc(db, "posts", docRef.id), {
+          image: downloadURL,
+        });
+      });
+    }
+
+    setLoading(false);
+    setInput("");
+    setSelectedFile(null);
+    setShowEmojis(false);
+  };
+
+  const addImageToPost = (e) => {
+    const reader = new FileReader();
+    if (e.target.files[0]) {
+      reader.readAsDataURL(e.target.files[0]);
+    }
+
+    reader.onload = (readerEvent) => {
+      setSelectedFile(readerEvent.target.result);
+    };
+  };
 
   const addEmojis = (e) => {
     let sym = e.unified.split("-");
@@ -115,7 +165,7 @@ function Input() {
             font-bold shadow-md hover:bg-[#1a8cd8] disabled:hover:bg-[#1d9bf0] 
             disabled:opacity-50 disabled:cursor-default text-[15px]"
             disabled={!input.trim() && !selectedFile}
-            // onClick={sendPost}
+            onClick={sendPost}
           >
             트윗하기
           </button>
